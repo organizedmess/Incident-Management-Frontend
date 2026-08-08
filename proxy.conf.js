@@ -4,7 +4,7 @@
 // instead of index.html. `bypass` lets browser navigations (Accept: text/html) fall
 // through to the Angular dev-server's SPA handling, while XHR/fetch calls made by
 // HttpClient (which don't send that Accept header) still get proxied to the backend.
-const BACKEND = 'http://localhost:8080';
+const BACKEND = 'https://incident-management-system-uk2o.onrender.com';
 
 function bypassNavigationRequests(req) {
   if (req.headers.accept && req.headers.accept.includes('text/html')) {
