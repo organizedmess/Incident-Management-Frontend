@@ -1,0 +1,93 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p class="page-subtitle">Real-time overview of system incidents and health.</p>
+    </div>
+  </div>
+
+  @if (error()) {
+    <app-error-state
+      title="Couldn't load the dashboard"
+      message="We couldn't reach the incident API. Check that the backend is running and try again."
+      (retry)="retry()"
+    />
+  } @else {
+    <section class="kpi-row">
+      <app-kpi-tile
+        label="Total incidents"
+        icon="inbox"
+        tone="default"
+        [value]="overview()?.totalIncidents ?? 0"
+        [loading]="loading()"
+      />
+      <app-kpi-tile
+        label="Open incidents"
+        icon="clock"
+        tone="info"
+        [value]="overview()?.openIncidents ?? 0"
+        [loading]="loading()"
+      />
+      <app-kpi-tile
+        label="Critical / High severity"
+        icon="shield-alert"
+        tone="critical"
+        [value]="criticalHighCount()"
+        [loading]="loading()"
+      />
+      <app-kpi-tile
+        label="Resolved incidents"
+        icon="circle-check"
+        tone="good"
+        [value]="overview()?.resolvedIncidents ?? 0"
+        [loading]="loading()"
+      />
+    </section>
+
+    <app-card title="Quick incident simulation" subtitle="Fire a realistic scenario straight into the backend — it will run through AI triage automatically.">
+      <app-simulation-panel (created)="onIncidentSimulated()" />
+    </app-card>
+
+    <section class="charts-row">
+      <app-card title="Incidents by severity" subtitle="Live distribution across all tracked incidents">
+        @if (loading()) {
+          <div class="chart-skeleton">
+            <app-skeleton width="140px" height="140px" />
+          </div>
+        } @else {
+          <app-donut-chart [data]="severityDonutData()" centerLabel="Total" />
+        }
+      </app-card>
+
+      <app-card title="Incidents by status" subtitle="Where every incident currently stands">
+        @if (loading()) {
+          <div class="chart-skeleton">
+            <app-skeleton width="140px" height="140px" />
+          </div>
+        } @else {
+          <app-donut-chart [data]="statusDonutData()" centerLabel="Total" />
+        }
+      </app-card>
+    </section>
+
+    <app-card title="Incidents over time" subtitle="Daily incident volume, last 30 days">
+      @if (loading()) {
+        <div class="chart-skeleton wide">
+          <app-skeleton width="100%" height="200px" />
+        </div>
+      } @else {
+        <app-trend-chart [data]="trendChartData()" />
+      }
+    </app-card>
+
+    <section class="lower-row">
+      <app-card title="Recent incidents" subtitle="The latest reports across all services">
+        <app-incidents-table [incidents]="recentIncidents()" [loading]="loading()" emptyMessage="No incidents yet — trigger a simulation above to get started." />
+      </app-card>
+
+      <app-card title="Live activity" subtitle="Newest incidents as they happen">
+        <app-activity-feed [items]="activityItems()" />
+      </app-card>
+    </section>
+  }
+</div>

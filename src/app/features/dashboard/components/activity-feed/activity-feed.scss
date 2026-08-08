@@ -1,0 +1,105 @@
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.feed-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  position: relative;
+  transition: background var(--duration-fast) var(--ease-standard);
+
+  &:hover {
+    background: var(--surface-2);
+  }
+
+  &.is-new {
+    animation: item-highlight 2.4s var(--ease-standard) forwards;
+  }
+}
+
+@keyframes item-highlight {
+  0% {
+    background: var(--accent-wash);
+    transform: translateX(-2px);
+  }
+  15% {
+    transform: translateX(0);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+.icon-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.sev-low {
+    color: var(--severity-low);
+    background: var(--severity-low-wash);
+  }
+  &.sev-medium {
+    color: var(--severity-medium);
+    background: var(--severity-medium-wash);
+  }
+  &.sev-high {
+    color: var(--severity-high);
+    background: var(--severity-high-wash);
+  }
+  &.sev-critical {
+    color: var(--severity-critical);
+    background: var(--severity-critical-wash);
+  }
+}
+
+.feed-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.feed-title {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feed-meta {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 1px;
+}
+
+.dot-sep {
+  opacity: 0.6;
+}
+
+.new-tag {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--accent-strong);
+  background: var(--accent-wash);
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  text-transform: uppercase;
+}

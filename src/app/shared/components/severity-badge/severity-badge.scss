@@ -1,0 +1,32 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 3px var(--space-2) 3px var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.sev-low {
+  color: var(--severity-low);
+  background: var(--severity-low-wash);
+}
+
+.sev-medium {
+  color: var(--severity-medium);
+  background: var(--severity-medium-wash);
+}
+
+.sev-high {
+  color: var(--severity-high);
+  background: var(--severity-high-wash);
+}
+
+.sev-critical {
+  color: var(--severity-critical);
+  background: var(--severity-critical-wash);
+}

@@ -1,0 +1,27 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 3px var(--space-2) 3px var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.status-open {
+  color: var(--incident-open);
+  background: var(--incident-open-wash);
+}
+
+.status-acknowledged {
+  color: var(--incident-acknowledged);
+  background: var(--incident-acknowledged-wash);
+}
+
+.status-resolved {
+  color: var(--incident-resolved);
+  background: var(--incident-resolved-wash);
+}

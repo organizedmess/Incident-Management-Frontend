@@ -1,0 +1,38 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Incidents</h1>
+      <p class="page-subtitle">Search, filter and triage every incident in the system.</p>
+    </div>
+  </div>
+
+  @if (error()) {
+    <app-error-state
+      title="Couldn't load incidents"
+      message="We couldn't reach the incident API. Check that the backend is running and try again."
+      (retry)="retry()"
+    />
+  } @else {
+    <app-card>
+      <app-filter-bar
+        [(searchTerm)]="searchTerm"
+        [(severities)]="severities"
+        [(statuses)]="statuses"
+        [(dateFrom)]="dateFrom"
+        [(dateTo)]="dateTo"
+        [(sortBy)]="sortBy"
+      />
+    </app-card>
+
+    <app-card>
+      <app-incidents-table
+        [incidents]="pagedIncidents()"
+        [loading]="loading()"
+        emptyMessage="No incidents match your filters. Try adjusting the search or clearing filters."
+      />
+      @if (!loading() && filteredIncidents().length > 0) {
+        <app-pagination [page]="page()" [totalItems]="filteredIncidents().length" [pageSize]="pageSize" (pageChange)="onPageChange($event)" />
+      }
+    </app-card>
+  }
+</div>

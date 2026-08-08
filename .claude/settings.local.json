@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la ~ 2>/dev/null | grep -iE 'incident|backend|spring' ; echo \"---\"; find ~ -maxdepth 2 -iname '*incident*' -not -path '*/Library/*' 2>/dev/null)",
+      "Read(//Users/dhruvpahadia/**)"
+    ]
+  }
+}

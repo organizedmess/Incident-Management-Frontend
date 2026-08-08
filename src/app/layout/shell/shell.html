@@ -1,0 +1,58 @@
+<div class="shell" [class.collapsed]="collapsed()">
+  <aside class="sidebar" [class.mobile-open]="mobileOpen()">
+    <div class="brand">
+      <div class="brand-mark">
+        <app-icon name="activity" [size]="18" [strokeWidth]="2.5" />
+      </div>
+      @if (!collapsed()) {
+        <div class="brand-text">
+          <span class="brand-name">Sentinel</span>
+          <span class="brand-sub">Incident Ops</span>
+        </div>
+      }
+    </div>
+
+    <nav class="nav">
+      @for (item of navItems; track item.path) {
+        <a
+          class="nav-item"
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: false }"
+        >
+          <app-icon [name]="item.icon" [size]="18" [strokeWidth]="1.9" />
+          @if (!collapsed()) {
+            <span>{{ item.label }}</span>
+          }
+        </a>
+      }
+    </nav>
+
+    <button type="button" class="collapse-btn" (click)="toggleCollapsed()">
+      <app-icon [name]="collapsed() ? 'chevron-right' : 'chevron-left'" [size]="16" />
+      @if (!collapsed()) {
+        <span>Collapse</span>
+      }
+    </button>
+  </aside>
+
+  @if (mobileOpen()) {
+    <div class="backdrop" (click)="closeMobile()"></div>
+  }
+
+  <div class="main">
+    <header class="topbar">
+      <button type="button" class="menu-btn" (click)="toggleMobile()" aria-label="Toggle navigation">
+        <app-icon name="menu" [size]="20" />
+      </button>
+      <div class="live-pill">
+        <span class="live-dot"></span>
+        Live monitoring
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

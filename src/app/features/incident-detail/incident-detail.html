@@ -1,0 +1,165 @@
+<div class="page">
+  <button type="button" class="back-link" routerLink="/incidents">
+    <app-icon name="arrow-left" [size]="15" />
+    Back to incidents
+  </button>
+
+  @if (loading()) {
+    <div class="header-skeleton">
+      <app-skeleton width="40%" height="26px" />
+      <app-skeleton width="60%" height="14px" />
+    </div>
+  } @else if (error()) {
+    <app-error-state
+      title="Couldn't load this incident"
+      message="It may have been removed, or the backend is unreachable."
+      (retry)="retry()"
+    />
+  } @else if (incident(); as incident) {
+    <header class="detail-header">
+      <div class="title-row">
+        <h1>{{ incident.title }}</h1>
+        <div class="badges">
+          <app-severity-badge [severity]="incident.severity" />
+          <app-status-badge [status]="incident.status" />
+        </div>
+      </div>
+
+      <div class="meta-row">
+        <span class="meta-item tabular">#{{ incident.id }}</span>
+        <span class="dot-sep">·</span>
+        <span class="meta-item">
+          <app-icon name="server" [size]="13" />
+          {{ incident.source }}
+        </span>
+        <span class="dot-sep">·</span>
+        <span class="meta-item" [title]="incident.createdAt | date: 'medium'">
+          <app-icon name="clock" [size]="13" />
+          Reported {{ timeAgo(incident.createdAt) }}
+        </span>
+        @if (incident.updatedAt !== incident.createdAt) {
+          <span class="dot-sep">·</span>
+          <span class="meta-item" [title]="incident.updatedAt | date: 'medium'">
+            Updated {{ timeAgo(incident.updatedAt) }}
+          </span>
+        }
+      </div>
+
+      <div class="actions-row">
+        @for (action of nextStatusActions(); track action.status) {
+          <button type="button" class="action-btn" [disabled]="updatingStatus()" (click)="updateStatus(action.status)">
+            <app-icon [name]="action.icon" [size]="14" />
+            {{ action.label }}
+          </button>
+        }
+        <button
+          type="button"
+          class="action-btn ghost"
+          [disabled]="notifyState() === 'sending'"
+          (click)="resendNotification()"
+        >
+          <app-icon [name]="notifyState() === 'sent' ? 'check' : 'send'" [size]="14" />
+          {{ notifyState() === 'sent' ? 'Notification sent' : 'Resend notification' }}
+        </button>
+      </div>
+    </header>
+
+    <div class="detail-grid">
+      <div class="main-col">
+        <app-card title="Description">
+          <p class="description">{{ incident.description }}</p>
+        </app-card>
+
+        <app-card>
+          <div class="ai-card">
+            <div class="ai-header">
+              <span class="ai-icon">
+                <app-icon name="brain-circuit" [size]="16" />
+              </span>
+              <div>
+                <h3>AI Analysis</h3>
+                <p class="ai-subtitle">Generated automatically by Gemini from the incident report</p>
+              </div>
+              <span class="ai-tag">
+                <app-icon name="sparkles" [size]="11" />
+                AI-generated
+              </span>
+            </div>
+
+            @switch (analysisPhase()) {
+              @case ('ready') {
+                @if (analysis(); as analysis) {
+                  @if (analysis.status === 'COMPLETED') {
+                    <div class="ai-body">
+                      <div class="ai-section">
+                        <p class="ai-label">Summary</p>
+                        <p class="ai-text">{{ analysis.summary }}</p>
+                      </div>
+                      <div class="ai-section">
+                        <p class="ai-label">Probable root cause</p>
+                        <p class="ai-text">{{ analysis.rootCause }}</p>
+                      </div>
+                      <div class="ai-section">
+                        <p class="ai-label">Recommended action</p>
+                        <p class="ai-text">{{ analysis.recommendedAction }}</p>
+                      </div>
+                      @if (analysis.priorityScore !== null) {
+                        <div class="ai-section">
+                          <p class="ai-label">Priority score</p>
+                          <div class="meter-row">
+                            <div class="meter-track">
+                              <div
+                                class="meter-fill"
+                                [class.high]="analysis.priorityScore >= 70"
+                                [class.medium]="analysis.priorityScore >= 40 && analysis.priorityScore < 70"
+                                [style.width.%]="analysis.priorityScore"
+                              ></div>
+                            </div>
+                            <span class="meter-value tabular">{{ analysis.priorityScore }}/100</span>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <div class="ai-failed">
+                      <app-icon name="triangle-alert" [size]="15" />
+                      <span>AI analysis could not complete{{ analysis.errorMessage ? ': ' + analysis.errorMessage : '.' }}</span>
+                    </div>
+                  }
+                }
+              }
+              @case ('pending') {
+                <div class="ai-loading">
+                  <app-icon name="loader-circle" [size]="15" class="spin" />
+                  <span>AI is analyzing this incident…</span>
+                </div>
+              }
+              @case ('gave-up') {
+                <div class="ai-failed">
+                  <app-icon name="triangle-alert" [size]="15" />
+                  <span>Analysis is taking longer than expected. It may still complete in the background.</span>
+                </div>
+              }
+            }
+          </div>
+        </app-card>
+
+        <app-card title="Timeline">
+          <ul class="timeline">
+            @for (entry of timeline(); track entry.title + entry.timestamp) {
+              <li class="timeline-item">
+                <span class="timeline-icon" [class]="'tone-' + entry.tone">
+                  <app-icon [name]="entry.icon" [size]="13" [strokeWidth]="2.5" />
+                </span>
+                <div class="timeline-content">
+                  <p class="timeline-title">{{ entry.title }}</p>
+                  <p class="timeline-time" [title]="entry.timestamp | date: 'medium'">{{ timeAgo(entry.timestamp) }}</p>
+                </div>
+              </li>
+            }
+          </ul>
+        </app-card>
+      </div>
+    </div>
+  }
+</div>
