@@ -3,6 +3,6 @@
 // Set to a full origin (e.g. https://api.example.com) if the backend is not proxied.
 export const environment = {
   production: true,
-  apiBaseUrl: '',
+  apiBaseUrl: 'https://incident-management-system-uk2o.onrender.com',
   pollingIntervalMs: 15000,
 };

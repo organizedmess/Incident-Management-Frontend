@@ -2,6 +2,6 @@
 // backend at localhost:8080, which avoids CORS entirely (the backend has no CORS config).
 export const environment = {
   production: false,
-  apiBaseUrl: '',
+  apiBaseUrl: 'https://incident-management-system-uk2o.onrender.com',
   pollingIntervalMs: 15000,
 };
