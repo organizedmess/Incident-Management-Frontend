@@ -7,20 +7,16 @@ It's built against the [Incident Management System](https://incident-management-
 ## Screenshots
 
 **Dashboard overview**
-
-Add image here
+<img width="395" height="701" alt="Screenshot 2026-08-09 at 12 38 29 PM" src="https://github.com/user-attachments/assets/88471914-1442-42dc-943e-44e79d889f48" />
 
 **Live distribution & trends**
-
-Add image here
+<img width="397" height="702" alt="Screenshot 2026-08-09 at 12 38 43 PM" src="https://github.com/user-attachments/assets/bfccaf49-d4fc-495f-bbcc-c90dce201539" />
 
 **Incident detail**
-
-Add image here
+<img width="398" height="702" alt="Screenshot 2026-08-09 at 12 39 19 PM" src="https://github.com/user-attachments/assets/4059a8c3-6933-450b-96f6-b9f9bf78537c" />
 
 **AI-generated analysis**
-
-Add image here
+<img width="396" height="702" alt="Screenshot 2026-08-09 at 12 39 00 PM" src="https://github.com/user-attachments/assets/e4af9d5a-bfab-46e6-b456-2837cefc2b64" />
 
 ## Features
 
