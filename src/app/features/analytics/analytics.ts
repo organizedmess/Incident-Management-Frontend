@@ -1,34 +1,38 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { catchError, forkJoin, of } from 'rxjs';
 import { AnalyticsService } from '../../core/services/analytics.service';
+import { BackendStatusService } from '../../core/services/backend-status.service';
 import { AnalyticsOverviewResponse, DailyCountResponse, SeverityCountResponse, StatusCountResponse } from '../../core/models/analytics.model';
 import { INCIDENT_STATUS_META, SEVERITY_META, SEVERITY_ORDER, STATUS_ORDER } from '../../core/utils/severity.util';
+import { DEMO_OVERVIEW, DEMO_SEVERITY_BREAKDOWN, DEMO_STATUS_BREAKDOWN, DEMO_TRENDS } from '../../core/demo/demo-data';
 import { Card } from '../../shared/components/card/card';
 import { KpiTile } from '../../shared/components/kpi-tile/kpi-tile';
 import { DonutChart, DonutDatum } from '../../shared/components/donut-chart/donut-chart';
 import { BarList, BarDatum } from '../../shared/components/bar-list/bar-list';
 import { TrendChart, TrendDatum } from '../../shared/components/trend-chart/trend-chart';
 import { ErrorState } from '../../shared/components/error-state/error-state';
-import { Skeleton } from '../../shared/components/skeleton/skeleton';
+import { ConnectionStatus } from '../../shared/components/connection-status/connection-status';
 
 @Component({
   selector: 'app-analytics',
   standalone: true,
-  imports: [Card, KpiTile, DonutChart, BarList, TrendChart, ErrorState, Skeleton],
+  imports: [Card, KpiTile, DonutChart, BarList, TrendChart, ErrorState, ConnectionStatus],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './analytics.html',
   styleUrl: './analytics.scss',
 })
 export class Analytics implements OnInit {
   private readonly analyticsService = inject(AnalyticsService);
+  private readonly backendStatus = inject(BackendStatusService);
 
-  protected readonly loading = signal(true);
   protected readonly error = signal(false);
+  protected readonly connectionState = this.backendStatus.status;
+  protected readonly usingDemoData = signal(true);
 
-  protected readonly overview = signal<AnalyticsOverviewResponse | null>(null);
-  protected readonly severityData = signal<SeverityCountResponse[]>([]);
-  protected readonly statusData = signal<StatusCountResponse[]>([]);
-  protected readonly trendData = signal<DailyCountResponse[]>([]);
+  protected readonly overview = signal<AnalyticsOverviewResponse | null>(DEMO_OVERVIEW);
+  protected readonly severityData = signal<SeverityCountResponse[]>(DEMO_SEVERITY_BREAKDOWN);
+  protected readonly statusData = signal<StatusCountResponse[]>(DEMO_STATUS_BREAKDOWN);
+  protected readonly trendData = signal<DailyCountResponse[]>(DEMO_TRENDS);
 
   protected readonly resolutionRate = computed(() => {
     const overview = this.overview();
@@ -59,11 +63,12 @@ export class Analytics implements OnInit {
   );
 
   ngOnInit(): void {
+    this.backendStatus.ensureStarted();
     this.load();
   }
 
   protected retry(): void {
-    this.loading.set(true);
+    this.error.set(false);
     this.load();
   }
 
@@ -76,8 +81,10 @@ export class Analytics implements OnInit {
     })
       .pipe(
         catchError(() => {
-          this.error.set(true);
-          this.loading.set(false);
+          this.backendStatus.reportFailure();
+          if (this.usingDemoData() && this.overview() === null) {
+            this.error.set(true);
+          }
           return of(null);
         }),
       )
@@ -87,8 +94,9 @@ export class Analytics implements OnInit {
         this.severityData.set(data.severity);
         this.statusData.set(data.status);
         this.trendData.set(data.trends);
+        this.usingDemoData.set(false);
         this.error.set(false);
-        this.loading.set(false);
+        this.backendStatus.reportSuccess();
       });
   }
 }

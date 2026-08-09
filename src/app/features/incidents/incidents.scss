@@ -24,3 +24,8 @@ h1 {
   color: var(--text-muted);
   margin-top: 2px;
 }
+
+.page-banner {
+  align-self: flex-start;
+  animation: fade-in-up var(--duration-base) var(--ease-standard);
+}

@@ -6,6 +6,10 @@
     </div>
   </div>
 
+  @if (usingDemoData() && connectionState() !== 'connected') {
+    <app-connection-status class="page-banner" />
+  }
+
   @if (error()) {
     <app-error-state
       title="Couldn't load incidents"
@@ -27,10 +31,9 @@
     <app-card>
       <app-incidents-table
         [incidents]="pagedIncidents()"
-        [loading]="loading()"
         emptyMessage="No incidents match your filters. Try adjusting the search or clearing filters."
       />
-      @if (!loading() && filteredIncidents().length > 0) {
+      @if (filteredIncidents().length > 0) {
         <app-pagination [page]="page()" [totalItems]="filteredIncidents().length" [pageSize]="pageSize" (pageChange)="onPageChange($event)" />
       }
     </app-card>

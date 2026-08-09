@@ -1,12 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { catchError, of } from 'rxjs';
 import { IncidentService } from '../../core/services/incident.service';
+import { BackendStatusService } from '../../core/services/backend-status.service';
 import { IncidentResponse, IncidentStatus, Severity } from '../../core/models/incident.model';
 import { SEVERITY_ORDER, STATUS_ORDER } from '../../core/utils/severity.util';
+import { DEMO_INCIDENTS } from '../../core/demo/demo-data';
 import { Card } from '../../shared/components/card/card';
 import { IncidentsTable } from '../../shared/components/incidents-table/incidents-table';
 import { Pagination } from '../../shared/components/pagination/pagination';
 import { ErrorState } from '../../shared/components/error-state/error-state';
+import { ConnectionStatus } from '../../shared/components/connection-status/connection-status';
 import { FilterBar, SortOption } from './components/filter-bar/filter-bar';
 
 const PAGE_SIZE = 10;
@@ -14,17 +17,19 @@ const PAGE_SIZE = 10;
 @Component({
   selector: 'app-incidents',
   standalone: true,
-  imports: [Card, IncidentsTable, Pagination, ErrorState, FilterBar],
+  imports: [Card, IncidentsTable, Pagination, ErrorState, ConnectionStatus, FilterBar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './incidents.html',
   styleUrl: './incidents.scss',
 })
 export class Incidents implements OnInit {
   private readonly incidentService = inject(IncidentService);
+  private readonly backendStatus = inject(BackendStatusService);
 
-  protected readonly loading = signal(true);
   protected readonly error = signal(false);
-  protected readonly allIncidents = signal<IncidentResponse[]>([]);
+  protected readonly connectionState = this.backendStatus.status;
+  protected readonly usingDemoData = signal(true);
+  protected readonly allIncidents = signal<IncidentResponse[]>(DEMO_INCIDENTS);
 
   protected readonly searchTerm = signal('');
   protected readonly severities = signal<Severity[]>([]);
@@ -83,11 +88,12 @@ export class Incidents implements OnInit {
   }
 
   ngOnInit(): void {
+    this.backendStatus.ensureStarted();
     this.load();
   }
 
   protected retry(): void {
-    this.loading.set(true);
+    this.error.set(false);
     this.load();
   }
 
@@ -100,16 +106,19 @@ export class Incidents implements OnInit {
       .getAll()
       .pipe(
         catchError(() => {
-          this.error.set(true);
-          this.loading.set(false);
+          this.backendStatus.reportFailure();
+          if (this.usingDemoData() && this.allIncidents().length === 0) {
+            this.error.set(true);
+          }
           return of(null);
         }),
       )
       .subscribe((incidents) => {
         if (!incidents) return;
         this.allIncidents.set(incidents);
+        this.usingDemoData.set(false);
         this.error.set(false);
-        this.loading.set(false);
+        this.backendStatus.reportSuccess();
       });
   }
 

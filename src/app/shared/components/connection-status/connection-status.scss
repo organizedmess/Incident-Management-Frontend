@@ -1,0 +1,106 @@
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--surface-1);
+  border: 1px solid var(--border-hairline);
+  max-width: 100%;
+}
+
+.status-dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.status-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.status-title {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-sub {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Connected — matches the pre-existing "Live monitoring" pill styling.
+.state-connected {
+  .status-dot {
+    background: var(--status-good);
+    animation: pulse-ring 2s ease-out infinite;
+  }
+
+  .status-title {
+    color: var(--text-secondary);
+  }
+}
+
+// Connecting — playful but professional: a warm amber pulse while the Render instance boots.
+.state-connecting {
+  border-color: color-mix(in srgb, var(--status-warning) 35%, var(--border-hairline));
+  background: var(--status-warning-wash);
+
+  .status-dot {
+    background: var(--status-warning);
+    animation: connecting-pulse 1.3s ease-in-out infinite;
+  }
+
+  .status-title {
+    color: var(--status-warning);
+  }
+}
+
+// Unavailable — clearly flagged, not alarming; last-known data is still on screen.
+.state-unavailable {
+  border-color: color-mix(in srgb, var(--status-serious) 35%, var(--border-hairline));
+  background: var(--status-serious-wash);
+
+  .status-dot {
+    background: var(--status-serious);
+    animation: none;
+    opacity: 0.85;
+  }
+
+  .status-title {
+    color: var(--status-serious);
+  }
+}
+
+@keyframes connecting-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.6;
+  }
+}
+
+@media (max-width: 640px) {
+  .status-pill {
+    padding: 5px var(--space-2);
+  }
+
+  .status-sub {
+    display: none;
+  }
+}

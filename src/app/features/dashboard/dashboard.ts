@@ -4,16 +4,18 @@ import { catchError, forkJoin, interval, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AnalyticsService } from '../../core/services/analytics.service';
 import { IncidentService } from '../../core/services/incident.service';
+import { BackendStatusService } from '../../core/services/backend-status.service';
 import { AnalyticsOverviewResponse, DailyCountResponse, SeverityCountResponse, StatusCountResponse } from '../../core/models/analytics.model';
 import { IncidentResponse } from '../../core/models/incident.model';
 import { SEVERITY_META, SEVERITY_ORDER, INCIDENT_STATUS_META, STATUS_ORDER } from '../../core/utils/severity.util';
+import { DEMO_OVERVIEW, DEMO_SEVERITY_BREAKDOWN, DEMO_STATUS_BREAKDOWN, DEMO_TRENDS, DEMO_INCIDENTS } from '../../core/demo/demo-data';
 import { Card } from '../../shared/components/card/card';
 import { KpiTile } from '../../shared/components/kpi-tile/kpi-tile';
 import { DonutChart, DonutDatum } from '../../shared/components/donut-chart/donut-chart';
 import { TrendChart, TrendDatum } from '../../shared/components/trend-chart/trend-chart';
 import { IncidentsTable } from '../../shared/components/incidents-table/incidents-table';
 import { ErrorState } from '../../shared/components/error-state/error-state';
-import { Skeleton } from '../../shared/components/skeleton/skeleton';
+import { ConnectionStatus } from '../../shared/components/connection-status/connection-status';
 import { SimulationPanel } from './components/simulation-panel/simulation-panel';
 import { ActivityFeed, ActivityItem } from './components/activity-feed/activity-feed';
 
@@ -28,7 +30,7 @@ interface DashboardData {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [Card, KpiTile, DonutChart, TrendChart, IncidentsTable, ErrorState, Skeleton, SimulationPanel, ActivityFeed],
+  imports: [Card, KpiTile, DonutChart, TrendChart, IncidentsTable, ErrorState, ConnectionStatus, SimulationPanel, ActivityFeed],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
@@ -36,15 +38,22 @@ interface DashboardData {
 export class Dashboard implements OnInit {
   private readonly analyticsService = inject(AnalyticsService);
   private readonly incidentService = inject(IncidentService);
+  private readonly backendStatus = inject(BackendStatusService);
 
-  protected readonly loading = signal(true);
+  // Real backend errors (distinct from "still connecting" — see backendStatus for that).
   protected readonly error = signal(false);
+  protected readonly connectionState = this.backendStatus.status;
 
-  protected readonly overview = signal<AnalyticsOverviewResponse | null>(null);
-  protected readonly severityData = signal<SeverityCountResponse[]>([]);
-  protected readonly statusData = signal<StatusCountResponse[]>([]);
-  protected readonly trendData = signal<DailyCountResponse[]>([]);
-  protected readonly allIncidents = signal<IncidentResponse[]>([]);
+  // Signals start pre-seeded with static demo data so the dashboard renders fully on first
+  // paint instead of a blank/skeleton screen while the Render backend wakes up. `usingDemoData`
+  // tracks whether what's currently on screen is that seed data or a real API response.
+  protected readonly usingDemoData = signal(true);
+
+  protected readonly overview = signal<AnalyticsOverviewResponse | null>(DEMO_OVERVIEW);
+  protected readonly severityData = signal<SeverityCountResponse[]>(DEMO_SEVERITY_BREAKDOWN);
+  protected readonly statusData = signal<StatusCountResponse[]>(DEMO_STATUS_BREAKDOWN);
+  protected readonly trendData = signal<DailyCountResponse[]>(DEMO_TRENDS);
+  protected readonly allIncidents = signal<IncidentResponse[]>(DEMO_INCIDENTS);
   protected readonly activityItems = signal<ActivityItem[]>([]);
 
   private readonly seenIncidentIds = new Set<number>();
@@ -85,25 +94,26 @@ export class Dashboard implements OnInit {
   );
 
   constructor() {
+    this.backendStatus.ensureStarted();
     interval(environment.pollingIntervalMs)
       .pipe(takeUntilDestroyed())
-      .subscribe(() => this.load(true));
+      .subscribe(() => this.load());
   }
 
   ngOnInit(): void {
-    this.load(false);
+    this.load();
   }
 
   protected retry(): void {
-    this.loading.set(true);
-    this.load(false);
+    this.error.set(false);
+    this.load();
   }
 
   protected onIncidentSimulated(): void {
-    this.load(true);
+    this.load();
   }
 
-  private load(isPoll: boolean): void {
+  private load(): void {
     forkJoin({
       overview: this.analyticsService.getOverview(),
       severity: this.analyticsService.getSeverityBreakdown(),
@@ -113,16 +123,23 @@ export class Dashboard implements OnInit {
     })
       .pipe(
         catchError(() => {
-          this.error.set(true);
-          this.loading.set(false);
+          // Real request failed. If we've never had live data, keep the demo data on screen
+          // (BackendStatusService drives the "waking up" / "unavailable" messaging) rather
+          // than blanking the dashboard. Only show the hard error state if we somehow have
+          // neither live nor demo data to fall back on.
+          this.backendStatus.reportFailure();
+          if (this.usingDemoData() && this.allIncidents().length === 0) {
+            this.error.set(true);
+          }
           return of(null);
         }),
       )
       .subscribe((data) => {
         if (!data) return;
         this.applyData(data);
+        this.usingDemoData.set(false);
         this.error.set(false);
-        this.loading.set(false);
+        this.backendStatus.reportSuccess();
       });
   }
 

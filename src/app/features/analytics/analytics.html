@@ -6,6 +6,10 @@
     </div>
   </div>
 
+  @if (usingDemoData() && connectionState() !== 'connected') {
+    <app-connection-status class="page-banner" />
+  }
+
   @if (error()) {
     <app-error-state
       title="Couldn't load analytics"
@@ -14,37 +18,23 @@
     />
   } @else {
     <section class="kpi-row">
-      <app-kpi-tile label="Total incidents" icon="inbox" tone="default" [value]="overview()?.totalIncidents ?? 0" [loading]="loading()" />
-      <app-kpi-tile label="Resolution rate" icon="circle-check" tone="good" [value]="resolutionRate() + '%'" [loading]="loading()" />
-      <app-kpi-tile label="Avg. AI priority score" icon="brain-circuit" tone="info" [value]="(overview()?.averagePriorityScore ?? 0).toFixed(1)" [loading]="loading()" hint="out of 100" />
-      <app-kpi-tile label="Critical incidents" icon="shield-alert" tone="critical" [value]="overview()?.criticalIncidents ?? 0" [loading]="loading()" />
+      <app-kpi-tile label="Total incidents" icon="inbox" tone="default" [value]="overview()?.totalIncidents ?? 0" />
+      <app-kpi-tile label="Resolution rate" icon="circle-check" tone="good" [value]="resolutionRate() + '%'" />
+      <app-kpi-tile label="Avg. AI priority score" icon="brain-circuit" tone="info" [value]="(overview()?.averagePriorityScore ?? 0).toFixed(1)" hint="out of 100" />
+      <app-kpi-tile label="Critical incidents" icon="shield-alert" tone="critical" [value]="overview()?.criticalIncidents ?? 0" />
     </section>
 
     <app-card title="Incidents over time" subtitle="Daily incident volume, last 30 days">
-      @if (loading()) {
-        <div class="chart-skeleton wide">
-          <app-skeleton width="100%" height="200px" />
-        </div>
-      } @else {
-        <app-trend-chart [data]="trendChartData()" />
-      }
+      <app-trend-chart [data]="trendChartData()" />
     </app-card>
 
     <section class="charts-row">
       <app-card title="Severity mix" subtitle="Share of incidents by severity">
-        @if (loading()) {
-          <div class="chart-skeleton"><app-skeleton width="100%" height="140px" /></div>
-        } @else {
-          <app-bar-list [data]="severityBarData()" />
-        }
+        <app-bar-list [data]="severityBarData()" />
       </app-card>
 
       <app-card title="Status breakdown" subtitle="Where incidents currently stand">
-        @if (loading()) {
-          <div class="chart-skeleton"><app-skeleton width="140px" height="140px" /></div>
-        } @else {
-          <app-donut-chart [data]="statusDonutData()" centerLabel="Total" />
-        }
+        <app-donut-chart [data]="statusDonutData()" centerLabel="Total" />
       </app-card>
     </section>
   }

@@ -37,15 +37,9 @@ h1 {
   gap: var(--space-4);
 }
 
-.chart-skeleton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-4) 0;
-
-  &.wide {
-    display: block;
-  }
+.dashboard-banner {
+  align-self: flex-start;
+  animation: fade-in-up var(--duration-base) var(--ease-standard);
 }
 
 .lower-row {
