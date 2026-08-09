@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+} from '@angular/core';
 import { BackendStatusService } from '../../../core/services/backend-status.service';
 
 @Component({
@@ -25,7 +30,7 @@ export class ConnectionStatus {
   protected readonly title = computed(() => {
     switch (this.status()) {
       case 'connecting':
-        return 'Backend is waking up from its slumber...';
+        return 'Backend is waking up from its slumber.....';
       case 'unavailable':
         return 'Live backend unavailable';
       case 'connected':
@@ -37,7 +42,7 @@ export class ConnectionStatus {
   protected readonly subtitle = computed(() => {
     switch (this.status()) {
       case 'connecting':
-        return 'Connecting to live data';
+        return 'Connecting to live data, Can take upto 2 minutes';
       case 'unavailable':
         return 'Showing last known data — retrying in background';
       case 'connected':
